@@ -5,15 +5,17 @@
 #include <cctype>
 #include <vector>
 #include <limits>
-#include <iomanip>
+#include <fstream>
 using namespace std;
 
 
 void main_menu();
 void set_level();
 int choose_level();
+void show_score();
 void show_board(vector<vector <int> >&, bool show_mies = false);
 void goto_xy(int, int);
+void save_score(const int&);
 void save_score(const int&);
 void set_boards(vector <vector <int> >&);
 void set_mines(vector<vector <int> >&, const int&);
@@ -74,7 +76,6 @@ int main()
         Board board(game_date.no_of_rows,  vector <int > (game_date.no_of_cols));
 
         set_boards(board);
-
         set_mines(board, game_date.no_of_mines);
         show_board(board);
 
@@ -329,11 +330,46 @@ void set_level()
     console_limits.down_y_limit = console_limits.right_x_limit-7;
 }
 
+void show_score()
+{
+    ifstream file("scores.txt");
+    if(file.is_open())
+    {
+        string myArray[10];
+
+        for(int i = 0; i < 10; ++i)
+        {
+            file >> myArray[i];
+
+               cout<<myArray[i]<<" ";
+               cout<<endl;
+        }}
+    file.close();
+}
+
+void save_score(const int& score)
+{
+    ofstream file;
+    file.open("scores.txt", ios::app);
+    string name;
+
+    cin.ignore();
+    do
+    {
+        cout << "\tENTER YOUR NAME\n>>> ";
+        getline(cin, name);
+    }
+    while (name.length() == 0);
+
+    file <<"Player:"<<name<<","<<"score:"<<score<<endl;
+    cout<< endl;
+
+    file.close();
+}
+
 void main_menu()
 {
     system("MODE 100, 40");
-    cout << "\n\n\n\n";
-
     while(true)
     {  system("CLS");
         cout << "\n\n\n\n\n\t\t|-----------------------------------------------------------|\n\n";
@@ -344,6 +380,7 @@ void main_menu()
 
         if (choice == 1)
             {
+                show_score();
                 system("PAUSE");
             }
         else
