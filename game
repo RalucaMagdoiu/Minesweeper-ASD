@@ -1,0 +1,350 @@
+#include <iostream>
+#include <windows.h>
+#include <conio.h>
+#include <cstdlib>
+#include <cctype>
+#include <vector>
+#include <limits>
+#include <iomanip>
+using namespace std;
+
+
+void main_menu();
+void set_level();
+int choose_level();
+void show_board(vector<vector <int> >&, bool show_mies = false);
+void goto_xy(int, int);
+void save_score(const int&);
+void set_boards(vector <vector <int> >&);
+void set_mines(vector<vector <int> >&, const int&);
+int get_input (string, const int, const int lower_limit = 0);
+
+/**
+    limitele cursorului in consola
+    left_x_limit,right_x_limit =coordonatele x orizonatale pe care se poate duce cursorul
+    up_y_limit,down_y_limit =coordonatele y verticale pe care se poate duce cursorul
+*/
+struct ConsoleLimits
+{   int left_x_limit,
+         right_x_limit,
+         up_y_limit,
+         down_y_limit;
+} console_limits;
+
+/** 1. no_of_row = Nr de linii care sunt afisate pe ecran
+    2. no_of_cols =nr de coloane afisate pe ecran
+    3. no_of_mines =nr de mine de pe tabla
+    4. x_pos =coordonata x a cursorului in consola
+    5. y_pos =coordonata y a cursorului in consola
+*/
+struct GameData
+{
+    int no_of_rows,
+        no_of_cols,
+        no_of_mines,
+        x_pos,
+        y_pos;
+    static const int mine_symbol = 0; //simbolul folosit pt mine este 0("zero")
+
+} game_date;
+
+int main()
+{
+    system("COLOR 3F");   // am schimbat culoarea consolei
+    SetConsoleTitle("Mine Sweeper");
+    typedef vector < vector <int > > Board;    // un vector de vector pt tabla
+    do
+    {
+        main_menu();
+
+        // alegerea nivelului
+        set_level();
+
+        // nr de locuri unde NU sunt mine
+        int no_of_unmines = (game_date.no_of_rows * game_date.no_of_cols) - game_date.no_of_mines;
+
+        int row_pos = 0,        // pozitia pe linie a cursorului
+             col_pos = 0,         // pozitia pe coloana a cursorului
+             score = 0;             // scorul
+
+        char ch;                            // caracter de la tastaura de catre utilizator (W,A,S,D,w,a,s,d)
+        bool game_over = false;         // daca utilizatorul da peste o mina devine adevarat si se incheie jocul
+
+        // crearea tablelor
+        Board board(game_date.no_of_rows,  vector <int > (game_date.no_of_cols));
+
+        set_boards(board);
+
+        set_mines(board, game_date.no_of_mines);
+        show_board(board);
+
+        game_date.x_pos = console_limits.left_x_limit - 1;
+        game_date.y_pos = console_limits.up_y_limit - 1;
+        goto_xy(game_date.x_pos, game_date.y_pos);
+
+        while (!game_over && score < no_of_unmines)
+        {
+                goto_xy(25, console_limits.down_y_limit + 6);
+                cout << "Score: " << score;
+                goto_xy(game_date.x_pos, game_date.y_pos);
+                ch = _getch();
+
+                switch (toupper(ch))  // un switch pt. a muta cursorul cu tastele w,a,s,d in limitele tablei
+                {
+                    case 'D':
+                        {
+                            if (game_date.x_pos < console_limits.right_x_limit)
+                            {
+                                game_date.x_pos += 2;
+                                col_pos++;
+                            }
+                        }
+                    break;
+
+                    case 'A':
+                        {
+                            if (game_date.x_pos > console_limits.left_x_limit)
+                            {
+                                game_date.x_pos -= 2;
+                                col_pos--;
+                            }
+                        }
+                    break;
+
+                    case 'W':
+                        {
+                            if(game_date.y_pos > console_limits.up_y_limit)
+                            {
+                                game_date.y_pos -= 2;
+                                row_pos--;
+                            }
+                        }
+                        break;
+
+                    case 'S':
+                        {
+                            if (game_date.y_pos < console_limits.down_y_limit)
+                            {
+                                game_date.y_pos += 2;
+                                row_pos++;
+                            }
+                        }
+                        break;
+
+                    case '\r':
+                        {
+                            if (board[row_pos][col_pos] == 0)
+                            {
+
+                                game_over = true;
+                            }
+                            else if (board[row_pos][col_pos] != -1)
+                            {
+                                cout << board[row_pos][col_pos];
+                                board[row_pos][col_pos] = -1;
+                                score++;
+                            }
+                        }
+                        break;
+
+                        goto_xy(game_date.x_pos, game_date.y_pos);
+                }
+              }
+                game_date.x_pos = 10, game_date.y_pos = 10;
+                system("CLS");
+                goto_xy(game_date.x_pos, game_date.y_pos);
+
+                if (!game_over && score == no_of_unmines)
+                {
+                    show_board(board, true);
+                    goto_xy(game_date.x_pos, game_date.y_pos + 3);
+                    cout << "YOU WON!\n";
+                    goto_xy(game_date.x_pos, game_date.y_pos + 4);
+                    cout << "YOU SELECTED ALL THE BOXES THAT DIDN'T HAVE A MINE!\n";
+                    goto_xy(game_date.x_pos, game_date.y_pos + 5);
+                }
+
+                else if (score < no_of_unmines)
+                {
+                    show_board(board, true);
+                    goto_xy(game_date.x_pos, game_date.y_pos + 1);
+                    cout << "GAME OVER!!\n\n";
+                    goto_xy(game_date.x_pos, game_date.y_pos + 2);
+                    cout << "YOU LOST!YOU HIT A MINE!\n";
+                    goto_xy(game_date.x_pos, game_date.y_pos + 3);
+                }
+
+
+                goto_xy(game_date.x_pos, game_date.y_pos + 1);
+                cout << "YOUR SCORE IS: " << score;
+                goto_xy(game_date.x_pos, game_date.y_pos + 4);
+                system("PAUSE");
+            }
+        while (true);
+    return 0;}
+
+void set_mines(vector<vector <int> >& board, const int& num_of_mines)
+{
+    int total_rows = board.size(),
+         total_cols = board[0].size(),
+         row_location,
+         col_location;
+
+    for (int mine = 0; mine < num_of_mines; mine++)
+    {
+        row_location = rand () % total_rows;
+        col_location = rand() % total_cols;
+        if (board[row_location][col_location] != game_date.mine_symbol)
+        {
+            board[row_location][col_location] = game_date.mine_symbol;
+        }
+        else
+            mine--;}}
+
+void set_boards(vector <vector <int> >& board)
+{
+    int rows = board.size(),
+         cols = board[0].size();
+
+    for (int row_pos = 0; row_pos < rows; row_pos++)
+    {
+        for (int col_pos = 0; col_pos < cols; col_pos++)
+        {
+            board[row_pos][col_pos] = 1 + rand() % 9;
+        }}}
+
+void show_board(vector <vector <int> >& board, bool show_mines)
+{
+    char ch = 178;
+    game_date.x_pos = 10;
+    game_date.y_pos = 3;
+
+    for (int row_pos = 0; row_pos < game_date.no_of_rows; row_pos++)
+    {
+        goto_xy(game_date.x_pos, game_date.y_pos);
+        for (int col_pos = 0; col_pos < game_date.no_of_cols; col_pos++)
+        {
+            if (show_mines)
+            {
+                board[row_pos][col_pos] == 0 ? cout << board[row_pos][col_pos] << " " : cout << ch << " ";
+            }
+            else
+                cout << ch << " ";
+        }
+        game_date.y_pos += 2;
+    }}
+
+
+void goto_xy(int x_pos, int y_pos)
+{
+    COORD coord;
+    coord.X = x_pos;
+    coord.Y = y_pos;
+    HANDLE h_console = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleCursorPosition(h_console, coord);
+}
+
+int get_input (string str, const int upper_limit, const int lower_limit)
+{
+    int num;
+    do
+    {
+        cout << "\nEnter a number of " << str << "  (" << (lower_limit + 1) << "-" << upper_limit << ")  ";
+        cin >> num;
+
+        if (num <= lower_limit && !cin.fail())
+        {
+            cout<<"Input must be positive!\n"<<endl;
+        }
+
+        if (num > upper_limit  && !cin.fail())
+        {
+            cout<<"Input is not within limits!\n"<<endl;
+        }
+
+        if (cin.fail())
+        {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout<<"Input must be an integer!\n"<<endl;
+        }}
+    while ((num <= lower_limit || num > upper_limit) && !cin.fail());
+
+    system("CLS");
+
+    return num;
+}
+
+int choose_level()
+{
+    SetConsoleTitle("MINE SWEEPER-> CHOOSE LEVEL");
+    cout << "\n\n\n\n\n\n\n\t\t|--------------------------------------------------------------------|\n"
+           << "\t\t|                    PRESS 1 fOR LEVEL 1 (EASY)                      |\n\n"
+           << "\t\t|                    PRESS 2 fOR LEVEL 2 (MEDIUM)                    |\n\n"
+           << "\t\t|                    PRESS 3 fOR LEVEL 3 (HARD)                      |\n\n"
+           << "\t\t|--------------------------------------------------------------------|\n";
+
+    int level = get_input("Level", 3);
+    return level;}
+
+void set_level()
+{
+    int level = choose_level();
+    SetConsoleTitle("Mine Sweeper Game -> Choose Level...!!");
+    switch (level)
+    {
+    case 1:
+        {game_date.no_of_rows = 9;
+            game_date.no_of_cols = 9;
+            game_date.no_of_mines = 10;
+            SetConsoleTitle("MINE SWEEPER GAME -> EASY MODE");
+            system("MODE 100, 40");
+        }
+        break;
+
+    case 2:
+        {game_date.no_of_rows = 15;
+            game_date.no_of_cols = 15;
+            game_date.no_of_mines = 30;
+            SetConsoleTitle("MINE SWEEPER GAME -> MEDIUM MODE");
+            system("MODE 100, 40");
+        }
+        break;
+
+    case 3:
+           {game_date.no_of_rows = 20;
+            game_date.no_of_cols = 20;
+            game_date.no_of_mines = 50;
+            SetConsoleTitle("MINE SWEEPER GAME -> HARD MODE");
+            system("MODE 100, 50");
+        }
+        break;
+}
+
+    game_date.x_pos = 10;
+    game_date.y_pos = 3;
+    console_limits.left_x_limit = game_date.x_pos + 1;
+    console_limits.right_x_limit = console_limits.left_x_limit + game_date.no_of_cols + game_date.no_of_rows-3;
+    console_limits.up_y_limit = game_date.y_pos + 1;
+    console_limits.down_y_limit = console_limits.right_x_limit-7;
+}
+
+void main_menu()
+{
+    system("MODE 100, 40");
+    cout << "\n\n\n\n";
+
+    while(true)
+    {  system("CLS");
+        cout << "\n\n\n\n\n\t\t|-----------------------------------------------------------|\n\n";
+        cout << "\t\t|                    ENTER 1 To View The Scoreboard         |\n\n";
+        cout << "\t\t|                    ENTER 2 To Play The Game               |\n\n";
+        cout << "\t\t|-----------------------------------------------------------|\n";
+        int choice = get_input("choice", 2);
+
+        if (choice == 1)
+            {
+                system("PAUSE");
+            }
+        else
+            return;}}
