@@ -179,6 +179,7 @@ int main()
                 goto_xy(game_date.x_pos, game_date.y_pos + 1);
                 cout << "YOUR SCORE IS: " << score;
                 goto_xy(game_date.x_pos, game_date.y_pos + 4);
+                save_score(score);
                 system("PAUSE");
             }
         while (true);
@@ -337,7 +338,7 @@ void show_score()
     {
         string myArray[10];
 
-        for(int i = 0; i < 10; ++i)
+        for(int i=0;i<10;++i)
         {
             file >> myArray[i];
 
