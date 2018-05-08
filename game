@@ -331,21 +331,29 @@ void set_level()
     console_limits.down_y_limit = console_limits.right_x_limit-7;
 }
 
-void show_score()
-{
-    ifstream file("scores.txt");
-    if(file.is_open())
+typedef struct scor{
+    char *name;
+    struct scor *nextScor;
+} scor;
+
+void print_score(scor *i)
+{  if (i == NULL) {
+        return;}
+    printf("%s\n",i->name);
+    print_score(i->nextScor);
+}
+
+scor* file_read(FILE *file)
+{   char Name[20];
+    int fileRead = fscanf(file,"%s",Name);
+    if(fileRead == EOF) 
     {
-        string myArray[10];
-
-        for(int i=0;i<10;++i)
-        {
-            file >> myArray[i];
-
-               cout<<myArray[i]<<" ";
-               cout<<endl;
-        }}
-    file.close();
+        return NULL;}
+    scor *i = new scor;
+    i->name = strdup(Name);
+    i->nextScor = file_read(file);
+    return i;
+    free(Name);
 }
 
 void save_score(const int& score)
@@ -381,7 +389,12 @@ void main_menu()
 
         if (choice == 1)
             {
-                show_score();
+                FILE *x = fopen("scores.txt","r");
+                scor *i = file_read(x);
+
+                fclose(x);
+                
+                print_score(i);
                 system("PAUSE");
             }
         else
