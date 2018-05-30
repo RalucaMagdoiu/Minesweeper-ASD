@@ -68,8 +68,8 @@ int main()
         int no_of_unmines = (game_date.no_of_rows * game_date.no_of_cols) - game_date.no_of_mines;
 
         int row_pos = 0,        // pozitia pe linie a cursorului
-             col_pos = 0,         // pozitia pe coloana a cursorului
-             score = 0;             // scorul
+            col_pos = 0,         // pozitia pe coloana a cursorului
+            score = 0;             // scorul
 
         char ch;                            // caracter de la tastaura de catre utilizator (W,A,S,D,w,a,s,d)
         bool game_over = false;         // daca utilizatorul da peste o mina devine adevarat si se incheie jocul
@@ -138,7 +138,6 @@ int main()
                         {
                             if (board[row_pos][col_pos] == 0)
                             {
-
                                 game_over = true;
                             }
                             else if (board[row_pos][col_pos] != -1)
@@ -190,9 +189,9 @@ int main()
 void set_mines(vector<vector <int> >& board, const int& num_of_mines)
 {
     int total_rows = board.size(),
-         total_cols = board[0].size(),
-         row_location,
-         col_location;
+        total_cols = board[0].size(),
+        row_location,
+        col_location;
 
     for (int mine = 0; mine < num_of_mines; mine++)
     {
@@ -237,7 +236,6 @@ void show_board(vector <vector <int> >& board, bool show_mines)
         }
         game_date.y_pos += 2;
     }}
-
 
 void goto_xy(int x_pos, int y_pos)
 {
@@ -294,14 +292,14 @@ int choose_level()
 void set_level()
 {
     int level = choose_level();
-    SetConsoleTitle("Mine Sweeper Game -> Choose Level...!!");
+    SetConsoleTitle("Mine Sweeper -> Choose Level...!!");
     switch (level)
     {
     case 1:
         {game_date.no_of_rows = 9;
             game_date.no_of_cols = 9;
             game_date.no_of_mines = 10;
-            SetConsoleTitle("MINE SWEEPER GAME -> EASY MODE");
+            SetConsoleTitle("MINE SWEEPER -> EASY MODE");
             system("MODE 100, 40");
         }
         break;
@@ -310,7 +308,7 @@ void set_level()
         {game_date.no_of_rows = 15;
             game_date.no_of_cols = 15;
             game_date.no_of_mines = 30;
-            SetConsoleTitle("MINE SWEEPER GAME -> MEDIUM MODE");
+            SetConsoleTitle("MINE SWEEPER -> MEDIUM MODE");
             system("MODE 100, 40");
         }
         break;
@@ -319,11 +317,10 @@ void set_level()
            {game_date.no_of_rows = 20;
             game_date.no_of_cols = 20;
             game_date.no_of_mines = 50;
-            SetConsoleTitle("MINE SWEEPER GAME -> HARD MODE");
+            SetConsoleTitle("MINE SWEEPER -> HARD MODE");
             system("MODE 100, 50");
         }
-        break;
-}
+        break;}
 
     game_date.x_pos = 10;
     game_date.y_pos = 3;
@@ -341,7 +338,7 @@ typedef struct scor{
 void print_score(scor *i)
 {  if (i == NULL) {
         return;}
-    printf("%s\n",i->name);
+    printf("\t%s\n",i->name);
     print_score(i->nextScor);
 }
 
@@ -378,7 +375,7 @@ void save_score(const int& score)
     file.close();
 }
 
-/////////////////////////////////////
+/////////////////////////////////////inceput AVL
 
 struct AVLNode
 {
@@ -391,7 +388,7 @@ struct AVLNode
 AVLNode *InputData(ifstream &);
 AVLNode *InsertData(AVLNode *, AVLNode *);
 int FindBalance(AVLNode *);
-void Traversal(AVLNode *);
+void Alphabetical(AVLNode *);
 AVLNode *LeftLeft(AVLNode *);
 AVLNode *RightRight(AVLNode *);
 AVLNode *LeftRight(AVLNode *);
@@ -485,22 +482,22 @@ AVLNode *RightLeft(AVLNode *RotateTop)
     return RightRight(RotateTop);
 }
 
-void Traversal(AVLNode *Root)
+void Alphabetical(AVLNode *Root)
 {
     AVLNode *temp;
     if(Root != NULL)
     {
-        Traversal(Root->LeftChild);  // print left subtree
-        cout << Root->Name<<endl; // print this node
+        Alphabetical(Root->LeftChild);  // print left subtree
+        cout << "\t"<<Root->Name<<endl; // print this node
 
         int temp1 = (FindBalance(Root->RightChild) - FindBalance(Root->LeftChild));
 
-       Traversal(Root->RightChild); // print right subtree
+       Alphabetical(Root->RightChild); // print right subtree
     }
     return;
 }
 
-////////////////////////////////
+////////////////////////////////sfarsit AVL
 
 
 void main_menu()
@@ -512,10 +509,9 @@ void main_menu()
         cout << "\t\t|                    ENTER 1 To View All Players            |\n\n";
         cout << "\t\t|                    ENTER 2 To Play The Game               |\n\n";
         cout << "\t\t|                    ENTER 3 To View Players In Order       |\n\n";
-        cout << "\t\t|                    ENTER 4 To View Leader-board            |\n\n";
-        cout << "\t\t|                    ENTER 5 To Exit The Game               |\n\n";
+        cout << "\t\t|                    ENTER 4 To Exit The Game               |\n\n";
         cout << "\t\t|-----------------------------------------------------------|\n";
-        int choice = get_input("choice",5);
+        int choice = get_input("choice",4);
 
         if ( choice == 1 )
             {
@@ -523,33 +519,28 @@ void main_menu()
                 scor *i = file_read(x);
 
                 fclose(x);
-
+                cout <<"\tAll Current Players:"<<"\n"<<endl;
                 print_score(i);
-                system("PAUSE");}
-
+                cout<<endl;
+                system("PAUSE");
+                }
         else if ( choice == 3 )
             /////
-            {ifstream CheckFile; //ifstream checks for file existence
-	char inputFileName[]="scores.txt";
-	CheckFile.open(inputFileName); //attempts to open read file, and tests for existence
-    if(!CheckFile)
-        cout << "Input file does not exist." << endl << endl;
-	else
-		cout <<"Players in alphabetical order:"<<"\n"<<endl;
-    AVLNode *head = InputData(CheckFile);
-
-    Traversal(head);
-
-    system("PAUSE");
-    }
-    /////
-    else if( choice == 4 )
             {
-            cout<<"hello";
-            system("PAUSE");
-        }
+                ifstream CheckFile; //ifstream verifica existenta filei
+	            char inputFileName[]="scores.txt";
+                CheckFile.open(inputFileName); //incearca sa descida si sa citeasca fila
+                if(!CheckFile)
+                cout << "\tInput file does not exist!" << endl << endl;
+                else
+                cout <<"\tPlayers in alphabetical order:"<<"\n"<<endl;
+                AVLNode *head = InputData(CheckFile);
 
-        else if( choice == 5 )
+                Alphabetical(head);
+                cout<<endl;
+                system("PAUSE");}
+    /////
+        else if( choice == 4 )
             {
             exit(0);
         }
