@@ -6,6 +6,8 @@
 #include <vector>
 #include <limits>
 #include <fstream>
+#include <string>
+#include <algorithm>
 using namespace std;
 
 
@@ -339,7 +341,7 @@ typedef struct scor{
 void print_score(scor *i)
 {  if (i == NULL) {
         return;}
-    printf("%s\n",i->name);
+    printf("\t%s\n",i->name);
     print_score(i->nextScor);
 }
 
@@ -376,26 +378,172 @@ void save_score(const int& score)
     file.close();
 }
 
+/////////////////////////////////////inceput AVL
+
+struct AVLNode
+{
+    string Name;
+    int Balance;
+    AVLNode *LeftChild;
+    AVLNode *RightChild;
+};
+
+AVLNode *InputData(ifstream &);
+AVLNode *InsertData(AVLNode *, AVLNode *);
+int FindBalance(AVLNode *);
+void Alphabetical(AVLNode *);
+AVLNode *LeftLeft(AVLNode *);
+AVLNode *RightRight(AVLNode *);
+AVLNode *LeftRight(AVLNode *);
+AVLNode *RightLeft(AVLNode *);
+
+
+AVLNode *InputData(ifstream &InFile)
+{
+    AVLNode *Root = NULL;
+    AVLNode *Leaf;
+    while(!InFile.eof())
+    {
+        Leaf = new AVLNode;
+        getline(InFile, Leaf->Name);
+        Leaf->Balance = 0;
+        Leaf->RightChild = Leaf->LeftChild = NULL;
+        if(Root == NULL)
+            Root = Leaf;
+        Root = InsertData(Leaf, Root);
+    }
+    return Root;
+}
+
+AVLNode *InsertData(AVLNode *Leaf, AVLNode *Root)
+{
+    if(Root == NULL)
+        return Leaf;
+    else if(Leaf->Name < Root->Name)
+    {
+        Root->LeftChild = InsertData(Leaf, Root->LeftChild);
+        if(FindBalance(Root->LeftChild) - FindBalance(Root->RightChild) == 2)
+        {
+            if(Leaf->Name < Root->LeftChild->Name)
+                Root = LeftLeft(Root);
+            else
+                Root = LeftRight(Root);
+        }
+    }
+    else if(Leaf->Name > Root->Name)
+    {
+        Root->RightChild = InsertData(Leaf, Root->RightChild);
+        if(FindBalance(Root->RightChild) - FindBalance(Root->LeftChild) == 2)
+        {
+            if(Leaf->Name > Root->RightChild->Name)
+                Root = RightRight(Root);
+            else
+                Root = RightLeft(Root);
+        }
+    }
+    Root->Balance = max(FindBalance(Root->LeftChild), FindBalance(Root->RightChild)) + 1;
+    return Root;
+}
+
+int FindBalance(AVLNode *Root)
+{
+    if(Root == NULL)
+        return -1;
+    else
+        return Root->Balance;
+}
+
+AVLNode *LeftLeft(AVLNode *Rotate)
+{
+    AVLNode *Pivot = Rotate->LeftChild;
+    Rotate->LeftChild = Pivot->RightChild;
+    Pivot->RightChild = Rotate;
+    Rotate->Balance = max(FindBalance(Rotate->LeftChild), FindBalance(Rotate->RightChild)) + 1;
+    Pivot->Balance = max(FindBalance(Pivot->LeftChild), FindBalance(Rotate->RightChild)) + 1;
+    return Pivot;
+}
+
+AVLNode *RightRight(AVLNode *Rotate)
+{
+    AVLNode *Pivot = Rotate->RightChild;
+    Rotate->RightChild = Pivot->LeftChild;
+    Pivot->LeftChild = Rotate;
+    Rotate->Balance = max(FindBalance(Rotate->LeftChild), FindBalance(Rotate->RightChild)) + 1;
+    Pivot->Balance = max(FindBalance(Pivot->RightChild), FindBalance(Rotate->LeftChild)) + 1;
+    return Pivot;
+}
+
+AVLNode *LeftRight(AVLNode *RotateTop)
+{
+    RotateTop->LeftChild = RightRight(RotateTop->LeftChild);
+    return LeftLeft(RotateTop);
+}
+
+AVLNode *RightLeft(AVLNode *RotateTop)
+{
+    RotateTop->RightChild = LeftLeft(RotateTop->RightChild);
+    return RightRight(RotateTop);
+}
+
+void Alphabetical(AVLNode *Root)
+{
+    AVLNode *temp;
+    if(Root != NULL)
+    {
+        Alphabetical(Root->LeftChild);  // print left subtree
+        cout << "\t"<<Root->Name<<endl; // print this node
+
+        int temp1 = (FindBalance(Root->RightChild) - FindBalance(Root->LeftChild));
+
+       Alphabetical(Root->RightChild); // print right subtree
+    }
+    return;
+}
+
+////////////////////////////////sfarsit AVL
+
 void main_menu()
 {
     system("MODE 100, 40");
     while(true)
     {  system("CLS");
         cout << "\n\n\n\n\n\t\t|-----------------------------------------------------------|\n\n";
-        cout << "\t\t|                    ENTER 1 To View The Scoreboard         |\n\n";
+        cout << "\t\t|                    ENTER 1 To View All Players            |\n\n";
         cout << "\t\t|                    ENTER 2 To Play The Game               |\n\n";
+        cout << "\t\t|                    ENTER 3 To View Players In Order       |\n\n";
+        cout << "\t\t|                    ENTER 4 To Exit The Game               |\n\n";
         cout << "\t\t|-----------------------------------------------------------|\n";
-        int choice = get_input("choice", 2);
+        int choice = get_input("choice",4);
 
-        if (choice == 1)
+        if ( choice == 1 )
             {
                 FILE *x = fopen("scores.txt","r");
                 scor *i = file_read(x);
 
                 fclose(x);
-                
+                cout <<"\tAll Current Players:"<<"\n"<<endl;
                 print_score(i);
+                cout<<endl;
                 system("PAUSE");
-            }
-        else
-            return;}}
+                }
+        else if ( choice == 3 )
+            /////
+            {
+                ifstream CheckFile; //ifstream verifica existenta filei
+	            char inputFileName[]="scores.txt";
+                CheckFile.open(inputFileName); //incearca sa descida si sa citeasca fila
+                if(!CheckFile)
+                cout << "\tInput file does not exist!" << endl << endl;
+                else
+                cout <<"\tPlayers in alphabetical order:"<<"\n"<<endl;
+                AVLNode *head = InputData(CheckFile);
+
+                Alphabetical(head);
+                cout<<endl;
+                system("PAUSE");}
+    /////
+        else if( choice == 4 )
+            {
+            exit(0);
+        }
+        else return;}}
