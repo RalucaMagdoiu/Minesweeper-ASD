@@ -1,6 +1,6 @@
 # Minesweeper-ASD
 
->This is a minesweeper game implemented in **C++** using data structure such as : **AVL Trees** ( for sorting strings in alphabetical order ) and **simple linked list** ( for storing and printing strings from a .txt file ).                                                                              
+>This is a minesweeper game implemented in **C++** using data structures such as : **AVL Trees** ( for sorting strings in alphabetical order ) and **simple linked list** ( for storing and printing strings from a .txt file ).                                                                              
 >It uses a **vector of vectors** to create two game borads( one that will not be visible for the user, in which mines are placed on the board, and a second visible one, in which the user selects cells ).
 
 
